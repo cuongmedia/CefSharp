@@ -1,10 +1,10 @@
-﻿// Copyright © 2010-2017 The CefSharp Authors. All rights reserved.
+// Copyright © 2016 The CefSharp Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found in the LICENSE file.
 
 using System.Collections.Generic;
 using System.Windows.Forms;
-using CefSharp;
+using CefSharp.Structs;
 using CefSharp.WinForms.Internals;
 
 namespace CefSharp.WinForms.Example.Handlers
@@ -14,46 +14,51 @@ namespace CefSharp.WinForms.Example.Handlers
         private Control parent;
         private Form fullScreenForm;
 
-        void IDisplayHandler.OnAddressChanged(IWebBrowser browserControl, AddressChangedEventArgs addressChangedArgs)
+        void IDisplayHandler.OnAddressChanged(IWebBrowser chromiumWebBrowser, AddressChangedEventArgs addressChangedArgs)
         {
-            
+
         }
 
-        void IDisplayHandler.OnTitleChanged(IWebBrowser browserControl, TitleChangedEventArgs titleChangedArgs)
+        bool IDisplayHandler.OnAutoResize(IWebBrowser chromiumWebBrowser, IBrowser browser, Size newSize)
         {
-            
+            return false;
         }
 
-        void IDisplayHandler.OnFaviconUrlChange(IWebBrowser browserControl, IBrowser browser, IList<string> urls)
+        void IDisplayHandler.OnTitleChanged(IWebBrowser chromiumWebBrowser, TitleChangedEventArgs titleChangedArgs)
         {
-            
+
         }
 
-        void IDisplayHandler.OnFullscreenModeChange(IWebBrowser browserControl, IBrowser browser, bool fullscreen)
+        void IDisplayHandler.OnFaviconUrlChange(IWebBrowser chromiumWebBrowser, IBrowser browser, IList<string> urls)
         {
-            var chromiumWebBrowser = (ChromiumWebBrowser)browserControl;
 
-            chromiumWebBrowser.InvokeOnUiThreadIfRequired(() =>
+        }
+
+        void IDisplayHandler.OnFullscreenModeChange(IWebBrowser chromiumWebBrowser, IBrowser browser, bool fullscreen)
+        {
+            var webBrowser = (ChromiumWebBrowser)chromiumWebBrowser;
+
+            webBrowser.InvokeOnUiThreadIfRequired(() =>
             {
                 if (fullscreen)
                 {
-                    parent = chromiumWebBrowser.Parent;
+                    parent = webBrowser.Parent;
 
-                    parent.Controls.Remove(chromiumWebBrowser);
+                    parent.Controls.Remove(webBrowser);
 
                     fullScreenForm = new Form();
                     fullScreenForm.FormBorderStyle = FormBorderStyle.None;
                     fullScreenForm.WindowState = FormWindowState.Maximized;
 
-                    fullScreenForm.Controls.Add(chromiumWebBrowser);
+                    fullScreenForm.Controls.Add(webBrowser);
 
                     fullScreenForm.ShowDialog(parent.FindForm());
                 }
                 else
                 {
-                    fullScreenForm.Controls.Remove(chromiumWebBrowser);
+                    fullScreenForm.Controls.Remove(webBrowser);
 
-                    parent.Controls.Add(chromiumWebBrowser);
+                    parent.Controls.Add(webBrowser);
 
                     fullScreenForm.Close();
                     fullScreenForm.Dispose();
@@ -62,18 +67,23 @@ namespace CefSharp.WinForms.Example.Handlers
             });
         }
 
-        bool IDisplayHandler.OnTooltipChanged(IWebBrowser browserControl, ref string text)
+        void IDisplayHandler.OnLoadingProgressChange(IWebBrowser chromiumWebBrowser, IBrowser browser, double progress)
+        {
+
+        }
+
+        bool IDisplayHandler.OnTooltipChanged(IWebBrowser chromiumWebBrowser, ref string text)
         {
             //text = "Sample text";
             return false;
         }
 
-        void IDisplayHandler.OnStatusMessage(IWebBrowser browserControl, StatusMessageEventArgs statusMessageArgs)
+        void IDisplayHandler.OnStatusMessage(IWebBrowser chromiumWebBrowser, StatusMessageEventArgs statusMessageArgs)
         {
-            
+
         }
 
-        bool IDisplayHandler.OnConsoleMessage(IWebBrowser browserControl, ConsoleMessageEventArgs consoleMessageArgs)
+        bool IDisplayHandler.OnConsoleMessage(IWebBrowser chromiumWebBrowser, ConsoleMessageEventArgs consoleMessageArgs)
         {
             return false;
         }

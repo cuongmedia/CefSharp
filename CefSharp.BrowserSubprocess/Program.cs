@@ -1,44 +1,36 @@
-﻿// Copyright © 2010-2017 The CefSharp Authors. All rights reserved.
+// Copyright © 2013 The CefSharp Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found in the LICENSE file.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using CefSharp.Internals;
+using CefSharp.RenderProcess;
 
 namespace CefSharp.BrowserSubprocess
 {
+    /// <summary>
+    /// When implementing your own BrowserSubprocess
+    /// - For Full .Net use <see cref="WcfBrowserSubprocessExecutable"/>
+    /// - For .Net Core use <see cref="BrowserSubprocessExecutable"/> (No WCF Support)
+    /// - Include an app.manifest with the dpi/compatability sections, this is required (this project contains the relevant).
+    /// - If you are targeting x86/Win32 then you should set /LargeAddressAware (https://docs.microsoft.com/en-us/cpp/build/reference/largeaddressaware?view=vs-2017)
+    /// </summary>
     public class Program
     {
         public static int Main(string[] args)
         {
-            Debug.WriteLine("BrowserSubprocess starting up with command line: " + String.Join("\n", args));
+            Debug.WriteLine("BrowserSubprocess starting up with command line: " + string.Join("\n", args));
 
             SubProcess.EnableHighDPISupport();
 
-            int result;
+            //Add your own custom implementation of IRenderProcessHandler here
+            IRenderProcessHandler handler = null;
 
-            const string typePrefix = "--type=";
-            var typeArgument = args.SingleOrDefault(arg => arg.StartsWith(typePrefix));
-            var type = typeArgument.Substring(typePrefix.Length);
-
-            //Use our custom subProcess provides features like EvaluateJavascript
-            if (type == "renderer")
-            {
-                var wcfEnabled = args.HasArgument(CefSharpArguments.WcfEnabledArgument);
-                var subProcess = wcfEnabled ? new WcfEnabledSubProcess(args) : new SubProcess(args);
-
-                using (subProcess)
-                {
-                    result = subProcess.Run();
-                }
-            }
-            else
-            {
-                result = SubProcess.ExecuteProcess();
-            }
+            //The WcfBrowserSubprocessExecutable provides BrowserSubProcess functionality
+            //specific to CefSharp, WCF support (required for Sync JSB) will optionally be
+            //enabled if the CefSharpArguments.WcfEnabledArgument command line arg is present
+            //For .Net Core use BrowserSubprocessExecutable as there is no WCF support
+            var browserProcessExe = new WcfBrowserSubprocessExecutable();
+            var result = browserProcessExe.Main(args, handler);
 
             Debug.WriteLine("BrowserSubprocess shutting down.");
 

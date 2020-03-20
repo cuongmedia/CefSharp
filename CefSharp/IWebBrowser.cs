@@ -1,9 +1,8 @@
-﻿// Copyright © 2010-2017 The CefSharp Authors. All rights reserved.
+// Copyright © 2011 The CefSharp Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found in the LICENSE file.
 
 using System;
-using CefSharp.ModelBinding;
 
 namespace CefSharp
 {
@@ -43,7 +42,7 @@ namespace CefSharp
         /// </summary>
         /// <remarks>Whilst this may seem like a logical place to execute js, it's called before the DOM has been loaded, implement
         /// <see cref="IRenderProcessMessageHandler.OnContextCreated"/> as it's called when the underlying V8Context is created
-        /// (Only called for the main frame at this stage)</remarks>
+        /// </remarks>
         event EventHandler<FrameLoadStartEventArgs> FrameLoadStart;
 
         /// <summary>
@@ -75,29 +74,20 @@ namespace CefSharp
         event EventHandler<LoadingStateChangedEventArgs> LoadingStateChanged;
 
         /// <summary>
+        /// Event handler that will get called when the message that originates from CefSharp.PostMessage
+        /// </summary>
+        event EventHandler<JavascriptMessageReceivedEventArgs> JavascriptMessageReceived;
+
+        /// <summary>
         /// Loads the specified URL.
         /// </summary>
         /// <param name="url">The URL to be loaded.</param>
         void Load(string url);
 
         /// <summary>
-        /// Registers a Javascript object in this specific browser instance.
+        /// The javascript object repository, one repository per ChromiumWebBrowser instance.
         /// </summary>
-        /// <param name="name">The name of the object. (e.g. "foo", if you want the object to be accessible as window.foo).</param>
-        /// <param name="objectToBind">The object to be made accessible to Javascript.</param>
-        /// <param name="options">binding options - camelCaseJavascriptNames default to true </param>
-        void RegisterJsObject(string name, object objectToBind, BindingOptions options = null);
-
-        /// <summary>
-        /// <para>Asynchronously registers a Javascript object in this specific browser instance.</para>
-        /// <para>Only methods of the object will be available.</para>
-        /// </summary>
-        /// <param name="name">The name of the object. (e.g. "foo", if you want the object to be accessible as window.foo).</param>
-        /// <param name="objectToBind">The object to be made accessible to Javascript.</param>
-        /// <param name="options">binding options - camelCaseJavascriptNames default to true </param>
-        /// <remarks>The registered methods can only be called in an async way, they will all return immeditaly and the resulting
-        /// object will be a standard javascript Promise object which is usable to wait for completion or failure.</remarks>
-        void RegisterAsyncJsObject(string name, object objectToBind, BindingOptions options = null);
+        IJavascriptObjectRepository JavascriptObjectRepository { get; }
 
         /// <summary>
         /// Implement <see cref="IDialogHandler" /> and assign to handle dialog events.
@@ -166,16 +156,10 @@ namespace CefSharp
         IFocusHandler FocusHandler { get; set; }
 
         /// <summary>
-        /// Implement <see cref="IResourceHandlerFactory" /> and control the loading of resources
+        /// Implement <see cref="IResourceRequestHandlerFactory" /> and control the loading of resources
         /// </summary>
         /// <value>The resource handler factory.</value>
-        IResourceHandlerFactory ResourceHandlerFactory { get; set; }
-
-        /// <summary>
-        /// Implement <see cref="IGeolocationHandler" /> and assign to handle requests for permission to use geolocation.
-        /// </summary>
-        /// <value>The geolocation handler.</value>
-        IGeolocationHandler GeolocationHandler { get; set; }
+        IResourceRequestHandlerFactory ResourceRequestHandlerFactory { get; set; }
 
         /// <summary>
         /// Implement <see cref="IRenderProcessMessageHandler" /> and assign to handle messages from the render process.
@@ -196,6 +180,12 @@ namespace CefSharp
         /// <remarks>In the WPF control, this property is implemented as a Dependency Property and fully supports data
         /// binding.</remarks>
         bool IsBrowserInitialized { get; }
+
+        /// <summary>
+        /// A flag that indicates whether the WebBrowser has been disposed (<see langword="true" />) or not (<see langword="false" />)
+        /// </summary>
+        /// <value><see langword="true" /> if this instance is disposed; otherwise, <see langword="false" /></value>
+        bool IsDisposed { get; }
 
         /// <summary>
         /// A flag that indicates whether the control is currently loading one or more web pages (true) or not (false).
@@ -242,6 +232,14 @@ namespace CefSharp
         /// and false in IRenderProcessMessageHandler.OnContextReleased
         /// </summary>
         bool CanExecuteJavascriptInMainFrame { get; }
+
+        /// <summary>
+        /// Gets the custom request context assigned to this browser instance
+        /// If no instance was assigned this will be null and the global
+        /// request context will have been used for this browser. 
+        /// You can access the global request context through Cef.GetGlobalRequestContext()
+        /// </summary>
+        IRequestContext RequestContext { get; }
 
         /// <summary>
         /// Attempts to give focus to the IWebBrowser control.

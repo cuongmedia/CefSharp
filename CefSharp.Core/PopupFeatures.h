@@ -1,4 +1,4 @@
-﻿// Copyright © 2010-2017 The CefSharp Authors. All rights reserved.
+// Copyright © 2016 The CefSharp Authors. All rights reserved.
 //
 // Use of this source code is governed by a BSD-style license that can be found in the LICENSE file.
 
@@ -11,12 +11,17 @@ namespace CefSharp
     /// <summary>
     /// Class representing popup window features.
     /// </summary>
+    /// <exclude />
     public ref class PopupFeatures : IPopupFeatures
     {
     private:
         const CefPopupFeatures* _popupFeatures;
 
     public:
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="popupFeatures">The popup features.</param>
         PopupFeatures(const CefPopupFeatures* popupFeatures)
         {
             _popupFeatures = popupFeatures;
@@ -87,29 +92,9 @@ namespace CefSharp
             bool get() { return _popupFeatures->toolBarVisible == 1; }
         }
 
-        virtual property bool LocationBarVisible
-        {
-            bool get() { return _popupFeatures->locationBarVisible == 1; }
-        }
-
         virtual property bool ScrollbarsVisible
         {
             bool get() { return _popupFeatures->scrollbarsVisible == 1; }
-        }
-
-        virtual property bool Resizable
-        {
-            bool get() { return _popupFeatures->resizable == 1; }
-        }
-
-        virtual property bool Fullscreen
-        {
-            bool get() { return _popupFeatures->fullscreen == 1; }
-        }
-
-        virtual property bool Dialog
-        {
-            bool get() { return _popupFeatures->dialog == 1; }
         }
 
         /*property List<String^>^ AdditionalFeatures
